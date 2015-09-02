@@ -420,6 +420,22 @@ public class StaggeredGridView extends ExtendableListView {
                 childrenLeft, gridChildTop, childRight, gridChildBottom);
     }
 
+    private int getSafeBottom(int column) {
+        int value = mColumnBottoms[column];
+        if (Integer.MIN_VALUE != value) {
+            return value;
+        }
+        return getLowestPositionedBottom();
+    }
+    
+    private int getSafeTop(int column) {
+        int value = mColumnTops[column];
+        if (Integer.MAX_VALUE != value) {
+            return value;
+        }
+        return getHighestPositionedTop();
+    }    
+    
     private void layoutGridChild(final View child, final int position,
                                  final boolean flowDown,
                                  final int childrenLeft, final int childRight) {
@@ -434,11 +450,11 @@ public class StaggeredGridView extends ExtendableListView {
         int verticalMargins = childTopMargin + childBottomMargin;
 
         if (flowDown) {
-            gridChildTop = mColumnBottoms[column]; // the next items top is the last items bottom
+            gridChildTop = getSafeBottom(column); // the next items top is the last items bottom
             gridChildBottom = gridChildTop + (getChildHeight(child) + verticalMargins);
         }
         else {
-            gridChildBottom = mColumnTops[column]; // the bottom of the next column up is our top
+            gridChildBottom = getSafeTop(column); // the bottom of the next column up is our top
             gridChildTop = gridChildBottom - (getChildHeight(child) + verticalMargins);
         }
 
@@ -511,11 +527,11 @@ public class StaggeredGridView extends ExtendableListView {
         int verticalMargins = childTopMargin + childBottomMargin;
 
         if (flowDown) {
-            gridChildTop = mColumnBottoms[column]; // the next items top is the last items bottom
+            gridChildTop = getSafeBottom(column); // the next items top is the last items bottom
             gridChildBottom = gridChildTop + (getChildHeight(child) + verticalMargins);
         }
         else {
-            gridChildBottom = mColumnTops[column]; // the bottom of the next column up is our top
+            gridChildBottom = getSafeTop(column); // the bottom of the next column up is our top
             gridChildTop = gridChildBottom - (getChildHeight(child) + verticalMargins);
         }
 
@@ -726,8 +742,12 @@ public class StaggeredGridView extends ExtendableListView {
 
     private void offsetColumnTopAndBottom(final int offset, final int column) {
         if (offset != 0) {
-            mColumnTops[column] += offset;
-            mColumnBottoms[column] += offset;
+            if (mColumnTops[column] != Integer.MAX_VALUE) {
+                mColumnTops[column] += offset;
+            }
+            if (mColumnBottoms[column] != Integer.MIN_VALUE) {
+                mColumnBottoms[column] += offset;
+            }
         }
     }
 
@@ -806,7 +826,7 @@ public class StaggeredGridView extends ExtendableListView {
 
         // Repair the top and bottom column boundaries from the views we still have
         Arrays.fill(mColumnTops, Integer.MAX_VALUE);
-        Arrays.fill(mColumnBottoms, 0);
+        Arrays.fill(mColumnBottoms, Integer.MIN_VALUE);
 
         for (int i = 0; i < getChildCount(); i++) {
             final View child = getChildAt(i);
@@ -1061,7 +1081,7 @@ public class StaggeredGridView extends ExtendableListView {
         initColumnTops();
         initColumnBottoms();
     }
-
+    
     private void initColumnTops() {
         Arrays.fill(mColumnTops, getPaddingTop() + mGridPaddingTop);
     }
@@ -1092,7 +1112,7 @@ public class StaggeredGridView extends ExtendableListView {
         // the highest positioned bottom is the one with the lowest value :D
         for (int i = 0; i < mColumnCount; i++) {
             int bottom = mColumnBottoms[i];
-            if (bottom < highestPositionedBottom) {
+            if (Integer.MIN_VALUE != bottom && bottom < highestPositionedBottom) {
                 highestPositionedBottom = bottom;
                 columnFound = i;
             }
@@ -1111,7 +1131,7 @@ public class StaggeredGridView extends ExtendableListView {
         // the lowest positioned bottom is the one with the highest value :D
         for (int i = 0; i < mColumnCount; i++) {
             int bottom = mColumnBottoms[i];
-            if (bottom > lowestPositionedBottom) {
+            if (Integer.MIN_VALUE != bottom && bottom > lowestPositionedBottom) {
                 lowestPositionedBottom = bottom;
                 columnFound = i;
             }
@@ -1136,7 +1156,7 @@ public class StaggeredGridView extends ExtendableListView {
         // the lowest positioned top is the one with the highest value :D
         for (int i = 0; i < mColumnCount; i++) {
             int top = mColumnTops[i];
-            if (top > lowestPositionedTop) {
+            if (Integer.MAX_VALUE != top && top > lowestPositionedTop) {
                 lowestPositionedTop = top;
                 columnFound = i;
             }
@@ -1155,7 +1175,7 @@ public class StaggeredGridView extends ExtendableListView {
         // the highest positioned top is the one with the lowest value :D
         for (int i = 0; i < mColumnCount; i++) {
             int top = mColumnTops[i];
-            if (top < highestPositionedTop) {
+            if (Integer.MAX_VALUE != top && top < highestPositionedTop) {
                 highestPositionedTop = top;
                 columnFound = i;
             }
