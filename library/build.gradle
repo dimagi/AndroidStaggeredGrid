@@ -19,5 +19,3 @@ android {
         abortOnError false
     }
 }
-
-apply from: 'https://raw.githubusercontent.com/denizmveli/gradle-mvn-push/master/gradle-mvn-push.gradle'
